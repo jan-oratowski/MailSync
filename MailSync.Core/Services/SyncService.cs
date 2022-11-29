@@ -55,32 +55,38 @@ public class SyncService
     public async Task SyncMessages(int passNo)
     {
         var account = await _context.Accounts
-            .Include(a => a.Folders).FirstAsync(a => a.Id == _sourceId);
+            .Include(a => a.Folders)
+            .ThenInclude(f => f.MapTo)
+            .FirstAsync(a => a.Id == _sourceId);
 
         var folders = account.
-            Folders.Where(f => f.Pass == passNo && f.MapTo?.Account.Id == _destinationId);
+            Folders.Where(f => f.Pass == passNo && f.MapTo?.Account.Id == _destinationId).ToList();
 
         foreach (var folder in folders)
         {
-            var folderMessages = await _source!.ListMessages(folder.Path, passNo * 180);
-            foreach (var message in folderMessages)
+            var index = 0;
+            while (index > -1)
             {
-                await MoveMessage(message, folder.Path, folder.MapTo!.Path);
+                index = await _source!.GetMessageForMove(folder.Path, passNo * 180);
+                if (index > -1)
+                {
+                    await MoveMessage(index, folder.Path, folder.MapTo!.Path);
+                }
             }
         }
     }
 
-    public async Task MoveMessage(UniqueId uid, string sourcePath, string destPath)
+    public async Task MoveMessage(int id, string sourcePath, string destPath)
     {
-        var msg = await _source!.GetMessage(uid, sourcePath);
+        var msg = await _source!.GetMessage(id, sourcePath);
         if (msg == null)
         {
-            Console.WriteLine($"Message was null: {uid}");
+            Console.WriteLine($"Message was null: {id}");
             return;
         }
         var store = await _destination!.SaveMessage(msg, destPath);
         if (store)
-            await _source.DeleteMessage(uid, sourcePath);
+            await _source.DeleteMessage(id, sourcePath);
     }
 
 }

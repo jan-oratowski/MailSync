@@ -1,4 +1,6 @@
-﻿using MailKit;
+﻿// ReSharper disable PossibleMultipleEnumeration
+
+using MailKit;
 using MailKit.Net.Imap;
 using MimeKit;
 
@@ -62,7 +64,7 @@ internal class ConnectionService
         }
     }
 
-    public async Task<List<UniqueId>> ListMessages(string dirPath, int olderThanDays)
+    public async Task<int> GetMessageForMove(string dirPath, int olderThanDays)
     {
         try
         {
@@ -71,21 +73,24 @@ internal class ConnectionService
             var dir = await _client!.GetFolderAsync(dirPath);
             _ = await dir.OpenAsync(FolderAccess.ReadOnly);
 
-            var allDates = await dir.FetchAsync(0, -1, MessageSummaryItems.InternalDate);
+            var allDates = await dir.FetchAsync(0, -1, MessageSummaryItems.All);
 
             var filteredDates = allDates
                 .Where(m => m.Date < DateTime.UtcNow.AddDays(olderThanDays * -1)).OrderBy(m => m.Date);
 
-            return filteredDates.Select(d => d.UniqueId).ToList();
+            if (!filteredDates.Any())
+                return -1;
+
+            return filteredDates.First().Index;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return new List<UniqueId>();
+            return -1;
         }
     }
 
-    public async Task<MimeMessage?> GetMessage(UniqueId uid, string dirPath)
+    public async Task<MimeMessage?> GetMessage(int idx, string dirPath)
     {
         try
         {
@@ -93,7 +98,7 @@ internal class ConnectionService
 
             var dir = await _client!.GetFolderAsync(dirPath);
             _ = await dir.OpenAsync(FolderAccess.ReadOnly);
-            return await dir.GetMessageAsync(uid);
+            return await dir.GetMessageAsync(idx);
         }
         catch (Exception e)
         {
@@ -110,9 +115,8 @@ internal class ConnectionService
 
             var dir = await _client!.GetFolderAsync(dirPath);
             _ = await dir.OpenAsync(FolderAccess.ReadWrite);
-
-            var uid = await dir.AppendAsync(FormatOptions.Default, msg);
-            return uid != null;
+            _ = await dir.AppendAsync(FormatOptions.Default, msg);
+            return true;
         }
         catch (Exception e)
         {
@@ -121,7 +125,7 @@ internal class ConnectionService
         }
     }
 
-    public async Task<bool> DeleteMessage(UniqueId uid, string dirPath)
+    public async Task<bool> DeleteMessage(int idx, string dirPath)
     {
         try
         {
@@ -130,7 +134,17 @@ internal class ConnectionService
             var dir = await _client!.GetFolderAsync(dirPath);
             _ = await dir.OpenAsync(FolderAccess.ReadWrite);
 
-            await dir.StoreAsync(uid, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Deleted) { Silent = true });
+            if (_server!.Contains("gmail"))
+            {
+                var trash =
+                    await _client!.GetFolderAsync("[Gmail]/Trash") ??
+                    await _client!.GetFolderAsync("[Google Mail]/Bin") ??
+                    await _client!.GetFolderAsync("[Gmail]/Bin");
+                await dir.MoveToAsync(idx, trash);
+                return true;
+            }
+
+            await dir.StoreAsync(idx, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Deleted) { Silent = true });
             await dir.ExpungeAsync();
             return true;
         }
