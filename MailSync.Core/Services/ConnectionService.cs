@@ -73,10 +73,18 @@ internal class ConnectionService
             var dir = await _client!.GetFolderAsync(dirPath);
             _ = await dir.OpenAsync(FolderAccess.ReadOnly);
 
-            var allDates = await dir.FetchAsync(0, -1, MessageSummaryItems.All);
+            var allDates = await dir.FetchAsync(0, 2, MessageSummaryItems.All);
 
             var filteredDates = allDates
                 .Where(m => m.Date < DateTime.UtcNow.AddDays(olderThanDays * -1)).OrderBy(m => m.Date);
+
+            if (!filteredDates.Any())
+            {
+                allDates = await dir.FetchAsync(0, -1, MessageSummaryItems.All);
+
+                filteredDates = allDates
+                    .Where(m => m.Date < DateTime.UtcNow.AddDays(olderThanDays * -1)).OrderBy(m => m.Date);
+            }
 
             if (!filteredDates.Any())
                 return -1;
