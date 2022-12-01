@@ -1,5 +1,4 @@
 ﻿using MailSync.Core;
-using MailSync.Core.Models;
 using MailSync.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,17 +8,24 @@ ctx.Database.Migrate();
 await ctx.SaveChangesAsync();
 Console.WriteLine("Migrations done.");
 
-//foreach (var account in ctx.Accounts)
-//{
-//    Console.WriteLine($"Downloading folders for {account.Name} started.");
-//    var source = new SyncService(ctx);
-//    await source.SetSource(account.Id);
-//    await source.DownloadDirectories();
-//    Console.WriteLine($"Downloading folders for {account.Name} done.");
-//}
+var syncServices = new List<SyncService>();
 
-var sync = new SyncService(ctx);
-await sync.SetSource(1);
-await sync.SetDestination(2);
+foreach (var account in ctx.Accounts)
+{
+    Console.WriteLine($"Downloading folders for {account.Name} started.");
+    var source = new SyncService(ctx);
+    await source.SetSource(account.Id);
+    await source.DownloadDirectories();
+    syncServices.Add(source);
+    Console.WriteLine($"Downloading folders for {account.Name} done.");
+}
 
-await sync.SyncMessages(1);
+foreach (var sync in syncServices)
+{
+    await sync.SetDestination(2);
+    await sync.SyncMessages(1);
+}
+
+
+
+

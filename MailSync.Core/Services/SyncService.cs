@@ -9,6 +9,8 @@ public class SyncService
     private readonly MailContext _context;
     private ConnectionService? _source, _destination;
     private int _sourceId, _destinationId;
+    private bool _sourceSyncEnabled;
+    public bool SyncEnabled => _sourceSyncEnabled && _destination != null;
     public SyncService(MailContext context)
     {
         _context = context;
@@ -28,6 +30,7 @@ public class SyncService
         _source = new ConnectionService();
         var sc = await _context.Accounts.FirstAsync(s => s.Id == sourceId);
         _source.SetConnection(sc.Server, sc.Port, sc.User, sc.Secret, sc.UseSsl);
+        _sourceSyncEnabled = sc.ShouldSync;
     }
 
     public async Task DownloadDirectories()
@@ -52,8 +55,11 @@ public class SyncService
         await _context.SaveChangesAsync();
     }
 
-    public async Task SyncMessages(int passNo)
+    public async Task SyncMessages(int passNo, bool force = false)
     {
+        if (!force && !SyncEnabled)
+            return;
+
         var account = await _context.Accounts
             .Include(a => a.Folders)
             .ThenInclude(f => f.MapTo)
