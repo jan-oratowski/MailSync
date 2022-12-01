@@ -5,14 +5,15 @@ namespace MailSync.Core;
 
 public class MailContext : DbContext
 {
-    public string DbPath { get; } = "mail.db";
+    private const string DbFile = "mail.db";
+    public string DbPath { get; }
 
     public DbSet<Account> Accounts { get; set; } = null!;
     public DbSet<Folder> Folders { get; set; } = null!;
 
     public MailContext()
     {
-
+        DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), DbFile);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)

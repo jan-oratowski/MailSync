@@ -1,5 +1,4 @@
-﻿using MailKit;
-using MailSync.Core.Models;
+﻿using MailSync.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MailSync.Core.Services;
@@ -90,6 +89,7 @@ public class SyncService
             Console.WriteLine($"Message was null: {id}");
             return;
         }
+        Console.WriteLine($"Moving message: {msg.Subject}");
         var store = await _destination!.SaveMessage(msg, destPath);
         if (store)
             await _source.DeleteMessage(id, sourcePath);
