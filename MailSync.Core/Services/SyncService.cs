@@ -72,7 +72,7 @@ public class SyncService
             var index = 0;
             while (index > -1)
             {
-                index = await _source!.GetMessageForMove(folder.Path, passNo * 180);
+                index = await _source!.GetMessageForMove(folder.Path, passNo * 30);
                 if (index > -1)
                 {
                     await MoveMessage(index, folder.Path, folder.MapTo!.Path);

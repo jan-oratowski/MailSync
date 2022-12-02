@@ -23,7 +23,7 @@ foreach (var account in ctx.Accounts)
 foreach (var sync in syncServices)
 {
     await sync.SetDestination(2);
-    for (var i = 0; i < 10; i++)
+    for (var i = 0; i <= 12; i++)
     {
         await sync.SyncMessages(i);
     }
