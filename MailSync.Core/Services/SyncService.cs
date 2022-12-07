@@ -20,7 +20,7 @@ public class SyncService
         _destinationId = destId;
         _destination = new ConnectionService();
         var dc = await _context.Accounts.FirstAsync(s => s.Id == destId);
-        _destination.SetConnection(dc.Server, dc.Port, dc.User, dc.Secret, dc.UseSsl);
+        _destination.SetConnection(dc.Server, dc.Port, dc.Login, dc.Secret, dc.UseSsl);
     }
 
     public async Task SetSource(int sourceId)
@@ -28,7 +28,7 @@ public class SyncService
         _sourceId = sourceId;
         _source = new ConnectionService();
         var sc = await _context.Accounts.FirstAsync(s => s.Id == sourceId);
-        _source.SetConnection(sc.Server, sc.Port, sc.User, sc.Secret, sc.UseSsl);
+        _source.SetConnection(sc.Server, sc.Port, sc.Login, sc.Secret, sc.UseSsl);
         _sourceSyncEnabled = sc.ShouldSync;
     }
 

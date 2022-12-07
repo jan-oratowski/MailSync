@@ -8,7 +8,7 @@ public class Account
     public string Server { get; set; } = null!;
     public int Port { get; set; }
     public bool UseSsl { get; set; }
-    public string User { get; set; } = null!;
+    public string Login { get; set; } = null!;
     public string Secret { get; set; } = null!;
     public List<Folder> Folders { get; set; } = new();
 }
