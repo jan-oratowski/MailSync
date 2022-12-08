@@ -11,6 +11,8 @@ public class MailContext : DbContext
     public DbSet<Account> Accounts { get; set; } = null!;
     public DbSet<Folder> Folders { get; set; } = null!;
 
+    public DbSet<User> Users { get; set; } = null!;
+
     public MailContext()
     {
         DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), DbFile);

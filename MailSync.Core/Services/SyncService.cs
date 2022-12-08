@@ -61,8 +61,16 @@ public class SyncService
 
         var account = await _context.Accounts
             .Include(a => a.Folders)
-            .ThenInclude(f => f.MapTo)
+            .ThenInclude(f => f.Rules)
             .FirstAsync(a => a.Id == _sourceId);
+
+        var folders =
+            _context.Folders.Where(f => f.Account.Id == _sourceId)
+                .Include(f => f.Rules)
+                .ThenInclude(r => r.Target);
+
+        if (!folders.Any())
+            return;
 
         var folders = account.
             Folders.Where(f => f.Pass == passNo && f.MapTo?.Account.Id == _destinationId).ToList();

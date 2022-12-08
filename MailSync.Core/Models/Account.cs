@@ -11,4 +11,5 @@ public class Account
     public string Login { get; set; } = null!;
     public string Secret { get; set; } = null!;
     public List<Folder> Folders { get; set; } = new();
+    public User User { get; set; } = null!;
 }

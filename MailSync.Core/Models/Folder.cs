@@ -4,8 +4,7 @@ public class Folder
 {
     public int Id { get; set; }
     public string Path { get; set; } = null!;
-    public Folder? MapTo { get; set; }
-    public int Pass { get; set; }
+    public bool IsHidden { get; set; }
     public Account Account { get; set; } = null!;
     public List<FolderRule> Rules { get; set; } = new();
 }
