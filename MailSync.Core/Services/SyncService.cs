@@ -72,9 +72,6 @@ public class SyncService
         if (!folders.Any())
             return;
 
-        var folders = account.
-            Folders.Where(f => f.Pass == passNo && f.MapTo?.Account.Id == _destinationId).ToList();
-
         foreach (var folder in folders)
         {
             var index = 0;
