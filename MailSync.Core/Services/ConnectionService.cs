@@ -95,6 +95,7 @@ internal class ConnectionService
         }
         catch (Exception e)
         {
+            Console.WriteLine($"{DateTime.Now} {dirPath}");
             Console.WriteLine(e);
             return -1;
         }
