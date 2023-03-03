@@ -7,5 +7,5 @@ public class Folder
     public Folder? MapTo { get; set; }
     public int Pass { get; set; }
     public Account Account { get; set; } = null!;
-    public List<FolderRule> Rules { get; set; } = new();
+    //public List<FolderRule> Rules { get; set; } = new();
 }
