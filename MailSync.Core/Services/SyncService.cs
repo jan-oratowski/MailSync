@@ -93,7 +93,7 @@ public class SyncService
         //if (DateFixService.FixDate(msg))
         //    Console.WriteLine($"Fixed date: {msg.Subject}");
 
-        Console.WriteLine($"Moving message: {msg.Subject}");
+        Console.WriteLine($"Moving message: {msg.Date} | {msg.Subject}");
         var store = await _destination!.SaveMessage(msg, destPath);
         if (store)
             await _source.DeleteMessage(id, sourcePath);
