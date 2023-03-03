@@ -89,6 +89,10 @@ public class SyncService
             Console.WriteLine($"Message was null: {id}");
             return;
         }
+
+        if (DateFixService.FixDate(msg))
+            Console.WriteLine($"Fixed date: {msg.Subject}");
+
         Console.WriteLine($"Moving message: {msg.Subject}");
         var store = await _destination!.SaveMessage(msg, destPath);
         if (store)

@@ -153,7 +153,7 @@ internal class ConnectionService
                 await dir.MoveToAsync(idx, trash);
                 return true;
             }
-
+            
             await dir.StoreAsync(idx, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Deleted) { Silent = true });
             await dir.ExpungeAsync();
             return true;
