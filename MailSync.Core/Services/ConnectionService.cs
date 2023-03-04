@@ -173,6 +173,8 @@ internal class ConnectionService
             folder.FullName,
         };
 
+        //Console.WriteLine(folder.FullName);
+
         try
         {
             foreach (var mailFolder in await folder.GetSubfoldersAsync(false))
