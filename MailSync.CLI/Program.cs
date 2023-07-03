@@ -2,7 +2,16 @@
 using MailSync.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
-var ctx = new MailContext();
+MailContext? ctx = null;
+
+if (args.Length > 0)
+{
+    var connString = args[0];
+    ctx = new MailContext(connString);
+}
+
+ctx ??= new MailContext();
+
 Console.WriteLine("Migrations starting.");
 ctx.Database.Migrate();
 await ctx.SaveChangesAsync();

@@ -12,6 +12,7 @@ internal class ConnectionService
     private int? _port;
     private bool _useSsl;
     private ImapClient? _client;
+    private IMailFolder? _trash;
 
     public void SetConnection(string server, int port, string login, string secret, bool useSsl)
     {
@@ -148,9 +149,16 @@ internal class ConnectionService
             if (_server!.Contains("gmail"))
             {
                 var trash =
-                    await _client!.GetFolderAsync("[Gmail]/Trash") ??
-                    await _client!.GetFolderAsync("[Google Mail]/Bin") ??
-                    await _client!.GetFolderAsync("[Gmail]/Bin");
+                    _trash ??
+                    await _client!.TryGetFolder("[Gmail]/Trash") ??
+                    await _client!.TryGetFolder("[Google Mail]/Bin") ??
+                    await _client!.TryGetFolder("[Gmail]/Bin");
+                
+                if (trash == null)
+                    return false;
+
+                _trash = trash;
+
                 await dir.MoveToAsync(idx, trash);
                 return true;
             }
