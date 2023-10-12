@@ -31,7 +31,7 @@ foreach (var account in ctx.Accounts)
 
 foreach (var sync in syncServices)
 {
-    await sync.SetDestination(2);
+    await sync.SetDestination(6);
     for (var i = 0; i <= 48; i++)
     {
         await sync.SyncMessages(i);

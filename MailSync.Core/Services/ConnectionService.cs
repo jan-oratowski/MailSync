@@ -10,17 +10,24 @@ internal class ConnectionService
 {
     private string? _server, _login, _secret;
     private int? _port;
-    private bool _useSsl;
+    private bool _useSsl, _ignoreCertificateValidation;
     private ImapClient? _client;
     private IMailFolder? _trash;
 
     public void SetConnection(string server, int port, string login, string secret, bool useSsl)
+    {
+        // todo: remove "true"
+        SetConnection(server, port, login, secret, useSsl, true);
+    }
+
+    public void SetConnection(string server, int port, string login, string secret, bool useSsl, bool ignoreCertificateValidation)
     {
         _server = server;
         _login = login;
         _secret = secret;
         _port = port;
         _useSsl = useSsl;
+        _ignoreCertificateValidation = ignoreCertificateValidation;
     }
 
     private async Task EnsureConnected()
@@ -28,22 +35,26 @@ internal class ConnectionService
         if (_client is { IsConnected: true })
             return;
 
-        _client = await Connect();
+        _client = await TryConnect();
     }
 
-    private Task<ImapClient> Connect()
+    private Task<ImapClient> TryConnect()
     {
         if (_server != null && _login != null && _secret != null)
-            return Connect(_server, _port ?? 995, _login, _secret, _useSsl);
+            return Connect();
 
         throw new Exception("Connection parameters not set!");
     }
 
-    private static async Task<ImapClient> Connect(string server, int port, string login, string secret, bool useSsl)
+    private async Task<ImapClient> Connect()
     {
         var client = new ImapClient();
-        await client.ConnectAsync(server, port, useSsl);
-        await client.AuthenticateAsync(login, secret);
+        
+        if(_ignoreCertificateValidation)
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+        
+        await client.ConnectAsync(_server, _port!.Value, _useSsl);
+        await client.AuthenticateAsync(_login, _secret);
         return client;
     }
 
@@ -153,6 +164,7 @@ internal class ConnectionService
                     await _client!.TryGetFolder("[Gmail]/Trash") ??
                     await _client!.TryGetFolder("[Google Mail]/Bin") ??
                     await _client!.TryGetFolder("[Gmail]/Bin");
+                    await _client!.TryGetFolder("[Gmail]/Prullenbak");
                 
                 if (trash == null)
                     return false;

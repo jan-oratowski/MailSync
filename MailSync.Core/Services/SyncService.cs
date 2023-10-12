@@ -95,8 +95,10 @@ public class SyncService
 
         Console.WriteLine($"Moving message: {msg.Date} | {msg.Subject}");
         var store = await _destination!.SaveMessage(msg, destPath);
-        if (store)
-            await _source.DeleteMessage(id, sourcePath);
+        
+        if (store && !await _source.DeleteMessage(id, sourcePath))
+            Console.WriteLine($"Failed to delete message: {id}");
+
     }
 
 }
